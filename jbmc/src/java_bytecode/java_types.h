@@ -182,6 +182,16 @@ class java_class_typet:public class_typet
     return get_bool(ID_incomplete_class);
   }
 
+  void set_is_enum(bool is_enum)
+  {
+    set(ID_enumeration, is_enum);
+  }
+
+  bool get_is_enum() const
+  {
+    return get_bool(ID_enumeration);
+  }
+
   // it may be better to introduce a class like
   // class java_lambda_method_handlet : private irept
   // {
