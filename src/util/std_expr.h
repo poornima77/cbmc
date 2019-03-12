@@ -1580,6 +1580,16 @@ public:
   {
   }
 
+  const array_typet &type() const
+  {
+    return static_cast<const array_typet &>(unary_exprt::type());
+  }
+
+  array_typet &type()
+  {
+    return static_cast<array_typet &>(unary_exprt::type());
+  }
+
   exprt &what()
   {
     return op0();
