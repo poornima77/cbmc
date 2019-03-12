@@ -1873,11 +1873,6 @@ class struct_exprt : public multi_ary_exprt
 {
 public:
   DEPRECATED("use struct_exprt(component_name, value, type) instead")
-  struct_exprt() : multi_ary_exprt(ID_struct)
-  {
-  }
-
-  DEPRECATED("use struct_exprt(component_name, value, type) instead")
   explicit struct_exprt(const typet &_type) : multi_ary_exprt(ID_struct, _type)
   {
   }
