@@ -2316,6 +2316,20 @@ void smt2_convt::convert_typecast(const typecast_exprt &expr)
       const typecast_exprt tmp(src, bool_typet());
       convert_typecast(typecast_exprt(tmp, dest_type));
     }
+    else if(src_type.id() == ID_bv)
+    {
+      if(
+        to_bv_type(src_type).get_width() !=
+        to_floatbv_type(dest_type).get_width())
+      {
+        UNEXPECTEDCASE("Typecast bv -> float with wrong width");
+      }
+
+      if(use_FPA_theory)
+        SMT2_TODO("FPA cast bv -> float");
+      else
+        convert_expr(src);
+    }
     else
       UNEXPECTEDCASE("Unknown typecast "+src_type.id_string()+" -> float");
   }
