@@ -243,7 +243,7 @@ const source_locationt &exprt::find_source_location() const
   return static_cast<const source_locationt &>(get_nil_irep());
 }
 
-void exprt::visit(std::function<void(exprt &)> visitor)
+void exprt::visit_pre(std::function<void(exprt &)> visitor)
 {
   std::stack<exprt *> stack;
 
@@ -261,7 +261,7 @@ void exprt::visit(std::function<void(exprt &)> visitor)
   }
 }
 
-void exprt::visit(std::function<void(const exprt &)> visitor) const
+void exprt::visit_pre(std::function<void(const exprt &)> visitor) const
 {
   std::stack<const exprt *> stack;
 
@@ -279,14 +279,80 @@ void exprt::visit(std::function<void(const exprt &)> visitor) const
   }
 }
 
+void exprt::visit_post(std::function<void(exprt &)> visitor)
+{
+  struct stack_entryt
+  {
+    exprt *e;
+    bool operands_pushed;
+    explicit stack_entryt(exprt *_e) : e(_e), operands_pushed(false)
+    {
+    }
+  };
+
+  std::stack<stack_entryt> stack;
+
+  stack.emplace(this);
+
+  while(!stack.empty())
+  {
+    auto &top = stack.top();
+    if(top.operands_pushed)
+    {
+      visitor(*top.e);
+      stack.pop();
+    }
+    else
+    {
+      // do modification before pushing in case 'top' isn't stable
+      top.operands_pushed = true;
+      for(auto &op : top.e->operands())
+        stack.emplace(&op);
+    }
+  }
+}
+
+void exprt::visit_post(std::function<void(const exprt &)> visitor) const
+{
+  struct stack_entryt
+  {
+    const exprt *e;
+    bool operands_pushed;
+    explicit stack_entryt(const exprt *_e) : e(_e), operands_pushed(false)
+    {
+    }
+  };
+
+  std::stack<stack_entryt> stack;
+
+  stack.emplace(this);
+
+  while(!stack.empty())
+  {
+    auto &top = stack.top();
+    if(top.operands_pushed)
+    {
+      visitor(*top.e);
+      stack.pop();
+    }
+    else
+    {
+      // do modification before pushing in case 'top' isn't stable
+      top.operands_pushed = true;
+      for(auto &op : top.e->operands())
+        stack.emplace(&op);
+    }
+  }
+}
+
 void exprt::visit(expr_visitort &visitor)
 {
-  visit([&visitor](exprt &e) { visitor(e); });
+  visit_pre([&visitor](exprt &e) { visitor(e); });
 }
 
 void exprt::visit(const_expr_visitort &visitor) const
 {
-  visit([&visitor](const exprt &e) { visitor(e); });
+  visit_pre([&visitor](const exprt &e) { visitor(e); });
 }
 
 depth_iteratort exprt::depth_begin()
